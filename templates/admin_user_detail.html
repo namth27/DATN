@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết người dùng - Dental AI Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+</head>
+<body>
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card border-0 shadow">
+          <div class="card-header bg-white">
+            <h4 class="mb-0">Chi tiết tài khoản</h4>
+          </div>
+          <div class="card-body">
+            <p><strong>ID:</strong> {{ user.id }}</p>
+            <p><strong>Tên đăng nhập:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Vai trò:</strong> {{ user.role }}</p>
+            <p><strong>Trạng thái:</strong>
+              {% if user.is_active %}
+                <span class="badge bg-success">Hoạt động</span>
+              {% else %}
+                <span class="badge bg-secondary">Vô hiệu</span>
+              {% endif %}
+            </p>
+            <p><strong>Ngày tạo:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
+          </div>
+          <div class="card-footer bg-white d-flex justify-content-between">
+            <a href="/admin/user/{{ user.id }}/edit" class="btn btn-outline-primary">Chỉnh sửa</a>
+            <a href="/admin" class="btn btn-outline-secondary">Quay lại</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

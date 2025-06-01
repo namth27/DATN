@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản trị hệ thống - Dental AI Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <style>
+      .checkbox-hover:hover {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <h3><i class="bi bi-heart-pulse-fill me-2"></i>Dental AI Pro</h3>
+        </div>
+
+        <ul class="list-unstyled components">
+          <li><a href="/admin"><i class="bi bi-shield-lock"></i> Quản trị người dùng</a></li>
+          <li class="active"><a href="/images"><i class="bi bi-image"></i> Quản lý ảnh</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+          <a href="/logout" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+          </a>
+        </div>
+      </nav>
+      
+      <!-- Page Content -->
+      
+      <div id="content" class="content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+          <div class="container-fluid">
+            <button type="button" id="sidebarCollapse" class="btn btn-primary">
+              <i class="bi bi-list"></i>
+            </button>
+            <div class="ms-auto d-flex align-items-center">
+              <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                  <img src="static/img/admin.jpg" class="rounded-circle me-2" alt="User" style="width: 40px; height: 40px; object-fit: cover;">
+                  <span class="d-none d-md-inline">Admin</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Cài đặt</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+        <div class="container-fluid p-4">
+          <h2 class="page-title">Quản lý ảnh gán nhãn</h2>
+
+          <div class="mb-3 d-flex align-items-center gap-3">
+            <form id="exportForm" method="POST">
+              <input type="hidden" name="selected_ids" id="selectedIdsInput">
+              <button type="submit" class="btn btn-success me-2" formaction="/images/export_bbox_txt">
+                <i class="bi bi-download"></i> Tải BBox (.txt)
+              </button>
+              <button type="submit" class="btn btn-primary" formaction="/images/export_segment_mask">
+                <i class="bi bi-download"></i> Tải Segmentation (.png)
+              </button>
+            </form>
+
+            <select id="filterStatus" class="form-select w-auto">
+              <option value="all">Tất cả</option>
+              <option value="bbox_done">Đã gán BBox</option>
+              <option value="segment_done">Đã gán Segment</option>
+              <option value="bbox_none">Chưa gán BBox</option>
+              <option value="segment_none">Chưa gán Segment</option>
+            </select>
+
+            <button id="selectAllBtn" class="btn btn-outline-secondary">
+              <i class="bi bi-check-square"></i> Chọn tất cả
+            </button>
+          </div>
+
+          <div class="card shadow-sm">
+            <div class="card-body table-responsive">
+              <table class="table table-hover" id="imagesTable">
+                <thead class="table-light">
+                  <tr>
+                    <th></th>
+                    <th>ID</th>
+                    <th>Tên ảnh</th>
+                    <th>BBox</th>
+                    <th>Segmentation</th>
+                    <th>Ngày tạo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for h in histories %}
+                  <tr class="checkbox-hover" data-bbox="{{ '1' if h.manual_labels else '0' }}" data-segment="{{ '1' if h.segmented else '0' }}">
+                    <td><input type="checkbox" class="form-check-input item-checkbox" data-id="{{ h.id }}"></td>
+                    <td>{{ h.id }}</td>
+                    <td>{{ h.image_name }}</td>
+                    <td>
+                      {% if h.manual_labels %}
+                        <span class="badge bg-success">Đã gán</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark">Chưa</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if h.segmented %}
+                        <span class="badge bg-success">Đã gán</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark">Chưa</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ h.created_at.strftime('%d/%m/%Y') }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+      <script>
+        const checkboxes = document.querySelectorAll(".item-checkbox");
+        const selectedIdsInput = document.getElementById("selectedIdsInput");
+        const exportForm = document.getElementById("exportForm");
+        const selectAllBtn = document.getElementById("selectAllBtn");
+        let allSelected = false;
+
+        exportForm.addEventListener("submit", function (e) {
+          const selectedIds = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.dataset.id);
+
+          if (selectedIds.length === 0) {
+            e.preventDefault();
+            alert("Vui lòng chọn ít nhất 1 ảnh để tải.");
+            return;
+          }
+
+          selectedIdsInput.value = JSON.stringify(selectedIds);
+        });
+
+        selectAllBtn.addEventListener("click", function () {
+          allSelected = !allSelected;
+          checkboxes.forEach(cb => cb.checked = allSelected);
+        });
+
+        document.getElementById("filterStatus").addEventListener("change", function () {
+          const value = this.value;
+          const rows = document.querySelectorAll("#imagesTable tbody tr");
+          rows.forEach(row => {
+            const hasBBox = row.dataset.bbox === "1";
+            const hasSegment = row.dataset.segment === "1";
+            row.style.display = ""; // reset
+
+            if (value === "bbox_done" && !hasBBox) row.style.display = "none";
+            if (value === "segment_done" && !hasSegment) row.style.display = "none";
+            if (value === "bbox_none" && hasBBox) row.style.display = "none";
+            if (value === "segment_none" && hasSegment) row.style.display = "none";
+          });
+        });
+      </script>
+    </div>
+  </body>
+</html>

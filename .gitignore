@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Environment
+.env
+*.env
+config.py
+
+# Database
+*.sqlite3
+*.db
+*.sql
+
+# Model files
+*.pt
+*.h5
+*.onnx
+*.pkl
+
+# Uploads and results
+static/uploads/
+static/results/
+uploads/
+data/
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# System
+.DS_Store
+Thumbs.db
+*.log

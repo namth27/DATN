@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gán nhãn thủ công - Dental AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+  <style>
+    #canvasWrapper { position: relative; border: 1px solid #ccc; }
+    canvas { border: 1px solid #999; cursor: crosshair; max-width: 100%; }
+    .annotation-item { display: flex; align-items: flex-start; gap: 1rem; padding: 0.5rem; border-bottom: 1px solid #ddd; }
+    .color-box { width: 20px; height: 20px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="bi bi-heart-pulse-fill me-2"></i>Dental AI Pro</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+        <li><a href="/patients"><i class="bi bi-people"></i> Bệnh nhân</a></li>
+        <li class="dropdown {% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}active{% endif %}">
+          <a href="#labelingSubmenu" data-bs-toggle="collapse" aria-expanded="{% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}true{% else %}false{% endif %}" class="dropdown-toggle">
+            <i class="bi bi-brush"></i> Chỉnh sửa ảnh
+          </a>
+          <ul class="collapse list-unstyled {% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}show{% endif %}" id="labelingSubmenu">
+            <li class="{% if request.path.startswith('/labeling') %}active{% endif %}">
+              <a href="/labeling"><i class="bi bi-pencil-square me-2"></i>Gán nhãn thủ công</a>
+            </li>
+            <li class="{% if request.path.startswith('/segment') %}active{% endif %}">
+              <a href="/segment"><i class="bi bi-vector-pen me-2"></i>Phân đoạn thủ công</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="/logout" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a>
+      </div>
+    </nav>
+    <div id="content" class="content">
+      <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-primary">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="ms-auto d-flex align-items-center">
+            <div class="dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <img src="{{ url_for('static', filename='img/doctor.jpg') }}" class="rounded-circle me-2" alt="User" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="d-none d-md-inline">{{ session['username'] }} ({{ session['role']|capitalize }})</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Cài đặt</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+    <!-- Page Content -->
+      <div class="container py-4">
+        <h4 class="mb-3">Gán nhãn cho ảnh: {{ history.image_name }}</h4>
+        <div id="canvasWrapper" class="mb-3">
+          <canvas id="labelCanvas"></canvas>
+        </div>
+
+        <div class="mb-3">
+          <button id="saveBox" class="btn btn-success me-2">Lưu box hiện tại</button>
+          <button id="clearAll" class="btn btn-danger">Xóa tất cả</button>
+        </div>
+
+        <div id="list" class="mb-4"></div>
+
+        <button id="saveBtn" class="btn btn-primary"><i class="bi bi-save"></i> Lưu kết quả</button>
+        <a href="/labeling" class="btn btn-secondary">Quay lại danh sách</a>
+      </div>
+    </div>
+    
+  </div>
+
+  <script>
+    const imageCanvas = document.getElementById('labelCanvas');
+    const imageCtx = imageCanvas.getContext('2d');
+    const saveBoxBtn = document.getElementById('saveBox');
+    const clearAllBtn = document.getElementById('clearAll');
+    const listContainer = document.getElementById('list');
+
+    const img = new Image();
+    img.src = "{{ url_for('static', filename='uploads/' + history.image_name) }}";
+
+    let startX, startY, endX, endY, isDrawing = false;
+    let boundingBoxes = [];
+    let colors = ['#ff6b6b', '#6bc2ff', '#75ff6b', '#ffeb3b', '#ff6bc7', '#9c27b0', '#00bcd4'];
+
+    img.onload = () => {
+      imageCanvas.width = img.width;
+      imageCanvas.height = img.height;
+      imageCtx.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+    };
+
+    imageCanvas.addEventListener('mousedown', (e) => {
+        const scaleX = imageCanvas.width / imageCanvas.getBoundingClientRect().width;
+        const scaleY = imageCanvas.height / imageCanvas.getBoundingClientRect().height;
+        startX = (e.offsetX) * scaleX;
+        startY = (e.offsetY) * scaleY;
+        isDrawing = true;
+      });
+      
+      imageCanvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+      
+        const scaleX = imageCanvas.width / imageCanvas.getBoundingClientRect().width;
+        const scaleY = imageCanvas.height / imageCanvas.getBoundingClientRect().height;
+        endX = (e.offsetX) * scaleX;
+        endY = (e.offsetY) * scaleY;
+      
+        redraw();
+        imageCtx.strokeStyle = 'red';
+        imageCtx.lineWidth = 2;
+        imageCtx.strokeRect(startX, startY, endX - startX, endY - startY);
+      });
+      
+
+    imageCanvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+    });
+
+    saveBoxBtn.addEventListener('click', () => {
+      if (startX == null || endX == null) return;
+      const width = endX - startX;
+      const height = endY - startY;
+      const name = prompt('Nhập tên cho box:', `Box ${boundingBoxes.length + 1}`);
+
+      if (name) {
+        boundingBoxes.push({ x: startX, y: startY, width, height, name, isFilled: false });
+        addToList(name, startX, startY, width, height, boundingBoxes.length - 1);
+        redraw();
+      }
+    });
+
+    function addToList(name, x, y, width, height, index) {
+      const item = document.createElement('div');
+      item.classList.add('annotation-item');
+      item.innerHTML = `
+        <div class="color-box" style="background-color: ${colors[index % colors.length]}"></div>
+        <div>
+          <strong>${name}</strong>
+          <p>Tọa độ: (${x.toFixed(2)}, ${y.toFixed(2)})</p>
+          <p>Kích thước: ${width.toFixed(2)} x ${height.toFixed(2)}</p>
+        </div>
+        <div>
+          <button class="fill btn btn-sm btn-outline-secondary">Fill</button>
+          <button class="delete btn btn-sm btn-outline-danger">Xóa</button>
+        </div>
+      `;
+      listContainer.appendChild(item);
+
+      item.querySelector('.delete').addEventListener('click', () => {
+        boundingBoxes.splice(index, 1);
+        listContainer.removeChild(item);
+        redraw();
+      });
+
+      item.querySelector('.fill').addEventListener('click', () => {
+        boundingBoxes[index].isFilled = true;
+        redraw();
+      });
+    }
+
+    clearAllBtn.addEventListener('click', () => {
+      boundingBoxes = [];
+      listContainer.innerHTML = '';
+      redraw();
+    });
+
+    function redraw() {
+      imageCtx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+      imageCtx.drawImage(img, 0, 0, imageCanvas.width, imageCanvas.height);
+      boundingBoxes.forEach((box, index) => {
+        imageCtx.strokeStyle = colors[index % colors.length];
+        imageCtx.lineWidth = 2;
+        imageCtx.strokeRect(box.x, box.y, box.width, box.height);
+        if (box.isFilled) {
+          imageCtx.fillStyle = colors[index % colors.length] + '80';
+          imageCtx.fillRect(box.x, box.y, box.width, box.height);
+        }
+        drawLabel(box.name, box.x, box.y - 5, colors[index % colors.length]);
+      });
+    }
+
+    function drawLabel(text, x, y, color) {
+      imageCtx.fillStyle = color;
+      imageCtx.font = '12px Arial';
+      imageCtx.fillText(text, x, y);
+    }
+
+    document.getElementById("saveBtn").onclick = () => {
+      fetch(`/labeling/{{ history.id }}/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ labels: boundingBoxes })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || "Đã lưu thành công!");
+      });
+    };
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+
+</html>

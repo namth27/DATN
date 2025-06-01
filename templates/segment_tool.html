@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phân đoạn thủ công - Dental AI Pro</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+  <style>
+    #canvasWrapper { position: relative; border: 1px solid #ccc; }
+    canvas { border: 1px solid #999; cursor: crosshair; max-width: 100%; }
+    .btn-group { margin-top: 20px; }
+  </style>
+
+  <style>
+    input[type="range"]::-webkit-slider-runnable-track {
+      background: #ccc;
+      height: 6px;
+      border-radius: 3px;
+    }
+  
+    input[type="range"]::-moz-range-track {
+      background: #ccc;
+      height: 6px;
+      border-radius: 3px;
+    }
+  
+    input[type="range"]::-ms-track {
+      background: #ccc;
+      height: 6px;
+      border-radius: 3px;
+    }
+  </style>
+
+</head>
+<body>
+  <div class="wrapper">
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="bi bi-heart-pulse-fill me-2"></i>Dental AI Pro</h3>
+      </div>
+      <ul class="list-unstyled components">
+        <li><a href="/"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+        <li><a href="/patients"><i class="bi bi-people"></i> Bệnh nhân</a></li>
+        <li class="dropdown {% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}active{% endif %}">
+          <a href="#labelingSubmenu" data-bs-toggle="collapse" aria-expanded="{% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}true{% else %}false{% endif %}" class="dropdown-toggle">
+            <i class="bi bi-brush"></i> Chỉnh sửa ảnh
+          </a>
+          <ul class="collapse list-unstyled {% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}show{% endif %}" id="labelingSubmenu">
+            <li class="{% if request.path.startswith('/labeling') %}active{% endif %}">
+              <a href="/labeling"><i class="bi bi-pencil-square me-2"></i>Gán nhãn thủ công</a>
+            </li>
+            <li class="{% if request.path.startswith('/segment') %}active{% endif %}">
+              <a href="/segment"><i class="bi bi-vector-pen me-2"></i>Phân đoạn thủ công</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <a href="/logout" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-box-arrow-right"></i> Đăng xuất
+        </a>
+      </div>
+    </nav>
+
+    <div id="content" class="content">
+      <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-primary">
+            <i class="bi bi-list"></i>
+          </button>
+          <div class="ms-auto d-flex align-items-center">
+            <div class="dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                <img src="{{ url_for('static', filename='img/doctor.jpg') }}" class="rounded-circle me-2" alt="User" style="width: 40px; height: 40px; object-fit: cover;">
+                <span class="d-none d-md-inline">{{ session['username'] }} ({{ session['role']|capitalize }})</span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Cài đặt</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="container py-4">
+        <h4 class="mb-3">Phân đoạn thủ công - {{ history.image_name }}</h4>
+        <div id="canvasWrapper" class="mb-3">
+            <canvas id="segmentCanvas"></canvas>
+        </div>
+        
+        <div class="btn-group">
+          <button id="clearCanvas" class="btn btn-danger btn-sm">Xóa mặt nạ</button>
+          <button id="saveSegment" class="btn btn-success btn-sm">Lưu mặt nạ</button>
+        </div>
+        <div class="form-range-wrapper mt-2">
+            <label for="lineWidthRange" class="form-label">Kích thước nét vẽ: <span id="lineWidthValue">2</span> px</label>
+            <input type="range" id="lineWidthRange" class="form-range" min="1" max="20" value="2" step="1">
+        </div>
+        <a href="/segment" class="btn btn-secondary mt-2">Quay lại danh sách</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    const canvas = document.getElementById('segmentCanvas');
+    const ctx = canvas.getContext('2d');
+    const image = new Image();
+    const imageSrc = "{{ url_for('static', filename='uploads/' + history.image_name) }}";
+    image.src = imageSrc;
+    let points = [];
+    let segments = [];  // Mảng lưu nhiều vùng phân đoạn
+    let currentSegment = [];  // Vùng phân đoạn hiện tại
+    let dynamicLineWidth = 2;
+  
+    image.onload = () => {
+      canvas.width = image.width;
+      canvas.height = image.height;
+      dynamicLineWidth = Math.max(2, Math.floor(image.width / 300)); // ảnh 1200px => 4px
+      ctx.drawImage(image, 0, 0);
+    };
+  
+    // Xử lý việc click để vẽ điểm
+    canvas.addEventListener('click', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+  
+      currentSegment.push({ x, y });
+      drawAll(); // Vẽ lại tất cả các vùng phân đoạn
+    });
+  
+    // Xử lý việc kết thúc phân đoạn khi click chuột phải
+    canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      if (currentSegment.length >= 3) {
+        segments.push(currentSegment); // Lưu vùng phân đoạn
+        currentSegment = []; // Reset lại vùng phân đoạn hiện tại
+        drawAll(); // Vẽ lại tất cả các vùng phân đoạn
+      }
+    });
+  
+    // Vẽ tất cả các vùng phân đoạn
+    function drawAll() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0);
+  
+      // Vẽ tất cả các vùng phân đoạn đã lưu
+      segments.forEach(segment => {
+        drawPolygon(segment, true); // Vẽ vùng đã được fill
+      });
+  
+      // Vẽ vùng phân đoạn hiện tại (chưa fill)
+      if (currentSegment.length > 0) {
+        drawPolygon(currentSegment, false);
+      }
+    }
+  
+    // Vẽ một vùng phân đoạn
+    function drawPolygon(points, closed = false) {
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      if (closed) {
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+        ctx.fill();
+      }
+      ctx.strokeStyle = 'red';
+      ctx.lineWidth = dynamicLineWidth;
+      ctx.stroke();
+    }
+  
+    // Xóa canvas
+    document.getElementById('clearCanvas').addEventListener('click', () => {
+      segments = [];  // Xóa tất cả các vùng phân đoạn
+      currentSegment = [];  // Reset lại vùng phân đoạn hiện tại
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0);
+    });
+  
+    // Lưu mặt nạ
+    document.getElementById('saveSegment').addEventListener('click', () => {
+        // segments = [ [ {x,y}, {x,y}, ... ], [ {x,y}, {x,y}, ... ] ]
+        const maskData = segments;
+        console.log(maskData);  // Log dữ liệu polygons
+    
+        fetch("/segment/{{ history.id }}/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ polygons: maskData })
+        })
+        .then(res => res.json())
+        .then(data => alert("Mặt nạ đã được lưu!"))
+        .catch(err => console.error("Lỗi khi lưu mặt nạ:", err));
+    });
+    
+    
+    const lineWidthRange = document.getElementById('lineWidthRange');
+    const lineWidthValue = document.getElementById('lineWidthValue');
+
+    lineWidthRange.addEventListener('input', function() {
+      lineWidthValue.textContent = this.value;
+      dynamicLineWidth = parseInt(this.value);
+    });
+
+  </script>
+</body>
+</html>

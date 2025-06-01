@@ -1,0 +1,203 @@
+/* Main Layout Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+  }
+  
+  .wrapper {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+  }
+  
+  /* Sidebar Styles */
+  .sidebar {
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 999;
+    background: #0d6efd;
+    color: #fff;
+    transition: all 0.3s;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar.active {
+    margin-left: -250px;
+  }
+  
+  .sidebar .sidebar-header {
+    padding: 20px;
+    background: #0b5ed7;
+  }
+  
+  .sidebar ul.components {
+    padding: 20px 0;
+    flex-grow: 1;
+  }
+  
+  .sidebar ul li a {
+    padding: 12px 20px;
+    font-size: 1.1em;
+    display: block;
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 3px solid transparent;
+  }
+  
+  .sidebar ul li a:hover {
+    background: #0b5ed7;
+    border-left: 3px solid #fff;
+  }
+  
+  .sidebar ul li.active > a {
+    background: #0b5ed7;
+    border-left: 3px solid #fff;
+  }
+  
+  .sidebar ul li a i {
+    margin-right: 10px;
+  }
+  
+  .sidebar-footer {
+    padding: 20px;
+    background: #0b5ed7;
+  }
+  
+  /* Content Styles */
+  .content {
+    width: calc(100% - 250px);
+    min-height: 100vh;
+    transition: all 0.3s;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+  
+  .content.active {
+    width: 100%;
+  }
+  
+  /* Navbar Styles */
+  .navbar {
+    padding: 15px 20px;
+  }
+  
+  /* Card Styles */
+  .card {
+    border-radius: 8px;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .card-header {
+    border-radius: 8px 8px 0 0 !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Icon Box */
+  .icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  
+  /* Page Title */
+  .page-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  /* Table Styles */
+  .table th {
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .table td {
+    vertical-align: middle;
+  }
+  
+  /* Appointment Time */
+  .appointment-time {
+    min-width: 60px;
+    text-align: center;
+  }
+  
+  /* Chart Container Styles */
+  .chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .sidebar {
+      margin-left: -250px;
+    }
+    .sidebar.active {
+      margin-left: 0;
+    }
+    .content {
+      width: 100%;
+    }
+    .content.active {
+      width: calc(100% - 250px);
+    }
+  }
+  
+  /* Login Page Styles */
+  .login-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .login-card {
+    max-width: 400px;
+    width: 100%;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #0d6efd;
+    border-radius: 10px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #0b5ed7;
+  }
+  
+  .form-range-wrapper {
+    max-width: 300px;
+  }

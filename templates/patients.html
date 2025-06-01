@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý bệnh nhân - Dental AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+  <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h3><i class="bi bi-heart-pulse-fill me-2"></i>Dental AI Pro</h3>
+      </div>
+
+      <ul class="list-unstyled components">
+        <li>
+          <a href="/">
+            <i class="bi bi-house-door"></i> Trang chủ
+          </a>
+        </li>
+        <li  class="active">
+          <a href="/patients">
+            <i class="bi bi-people"></i> Bệnh nhân
+          </a>
+        </li>
+        <li class="dropdown {% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}active{% endif %}">
+          <a href="#labelingSubmenu" data-bs-toggle="collapse" aria-expanded="{% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}true{% else %}false{% endif %}" class="dropdown-toggle">
+            <i class="bi bi-brush"></i> Chỉnh sửa ảnh
+          </a>
+          <ul class="collapse list-unstyled {% if request.path.startswith('/labeling') or request.path.startswith('/segment') %}show{% endif %}" id="labelingSubmenu">
+            <li class="{% if request.path.startswith('/labeling') %}active{% endif %}">
+              <a href="/labeling"><i class="bi bi-pencil-square me-2"></i>Gán nhãn thủ công</a>
+            </li>
+            <li class="{% if request.path.startswith('/segment') %}active{% endif %}">
+              <a href="/segment"><i class="bi bi-vector-pen me-2"></i>Phân đoạn thủ công</a>
+            </li>
+          </ul>
+        </li>
+
+      </ul>
+
+      <div class="sidebar-footer">
+        <a href="/logout" class="btn btn-outline-light btn-sm">
+          <i class="bi bi-box-arrow-right"></i> Đăng xuất
+        </a>
+      </div>
+    </nav>
+        <!-- Page Content -->
+        <div id="content" class="content">
+          <!-- Top Navbar -->
+          <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div class="container-fluid">
+              <button type="button" id="sidebarCollapse" class="btn btn-primary">
+                <i class="bi bi-list"></i>
+              </button>
+              <div class="ms-auto d-flex align-items-center">
+                <div class="dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <img src="static/img/doctor.jpg" class="rounded-circle me-2" alt="User" style="width: 40px; height: 40px; object-fit: cover;">
+                    <span class="d-none d-md-inline">
+                      {{ session['username'] }} ({{ session['role']|capitalize }})
+                    </span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Cài đặt</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </nav>
+            
+  <div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Danh sách bệnh nhân</h2>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPatientModal">
+        <i class="bi bi-person-plus"></i> Thêm mới
+      </button>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Họ tên</th>
+            <th>Ngày sinh</th>
+            <th>Giới tính</th>
+            <th>Địa chỉ</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for patient in patients %}
+          <tr>
+            <td>{{ patient.id }}</td>
+            <td>{{ patient.name }}</td>
+            <td>{{ patient.dob.strftime('%d/%m/%Y') }}</td>
+            <td>{{ patient.gender }}</td>
+            <td>{{ patient.address or '-' }}</td>
+            <td>
+              {% if patient.status == 'Chưa khám' %}
+                <span class="badge bg-secondary">{{ patient.status }}</span>
+              {% elif patient.status == 'Đã khám' %}
+                <span class="badge bg-info text-dark">{{ patient.status }}</span>
+              {% elif patient.status == 'Hoàn thành' %}
+                <span class="badge bg-success">{{ patient.status }}</span>
+              {% else %}
+                <span class="badge bg-light text-dark">{{ patient.status or 'Không rõ' }}</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="/patients/{{ patient.id }}" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+              <a href="/patients/{{ patient.id }}/edit" class="btn btn-sm btn-outline-secondary">Sửa</a>
+              <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#uploadModal{{ patient.id }}">
+                Phân tích
+              </button>            
+            </td>
+          </tr>
+
+          <div class="modal fade" id="uploadModal{{ patient.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <form action="/patients/{{ patient.id }}/segment" method="POST" enctype="multipart/form-data">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Phân tích ảnh cho {{ patient.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                  </div>
+                  <div class="modal-body">
+                    <input type="file" class="form-control" name="image" required>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Phân tích</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Modal Thêm bệnh nhân -->
+<div class="modal fade" id="addPatientModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/patients/add" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title">Thêm bệnh nhân mới</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Họ tên</label>
+            <input type="text" class="form-control" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Ngày sinh</label>
+            <input type="date" class="form-control" name="dob" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Giới tính</label>
+            <select class="form-select" name="gender">
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Địa chỉ</label>
+            <input type="text" class="form-control" name="address" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Số điện thoại</label>
+            <input type="text" class="form-control" name="phone" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="submit" class="btn btn-primary">Thêm mới</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

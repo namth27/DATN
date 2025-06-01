@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lịch sử phân tích - Dental AI Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <nav id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <h3><i class="bi bi-heart-pulse-fill me-2"></i>Dental AI Pro</h3>
+        </div>
+
+        <ul class="list-unstyled components">
+          <li>
+            <a href="index.html">
+              <i class="bi bi-house-door"></i> Trang chủ
+            </a>
+          </li>
+          <li>
+            <a href="patients.html">
+              <i class="bi bi-people"></i> Bệnh nhân
+            </a>
+          </li>
+          <li class="active">
+            <a href="history.html">
+              <i class="bi bi-clock-history"></i> Lịch sử phân tích
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-footer">
+          <a href="login.html" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-box-arrow-right"></i> Đăng xuất
+          </a>
+        </div>
+      </nav>
+
+      <!-- Page Content -->
+      <div id="content" class="content">
+        <!-- Top Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+          <div class="container-fluid">
+            <button type="button" id="sidebarCollapse" class="btn btn-primary">
+              <i class="bi bi-list"></i>
+            </button>
+            
+            <div class="ms-auto d-flex align-items-center">
+              <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                  <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="User">
+                  <span class="d-none d-md-inline">Dr. Nguyễn Văn A</span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Hồ sơ</a></li>
+                  <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Cài đặt</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="login.html"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="container-fluid p-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h2 class="page-title">Lịch sử phân tích</h2>
+              <p class="text-muted">Xem lại các phân tích AI đã thực hiện</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadImageModal">
+              <i class="bi bi-upload me-2"></i>Tải lên ảnh mới
+            </button>
+          </div>
+
+          <!-- Search and Filter -->
+          <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Tìm kiếm theo tên bệnh nhân, mã...">
+                    <button class="btn btn-primary">Tìm</button>
+                  </div>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-select">
+                    <option selected>Loại ảnh</option>
+                    <option>X-quang</option>
+                    <option>Panorama</option>
+                    <option>CT Scan</option>
+                    <option>Tất cả</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-select">
+                    <option selected>Kết quả</option>
+                    <option>Sâu răng</option>
+                    <option>Viêm nướu</option>
+                    <option>Răng khôn</option>
+                    <option>Tất cả</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <select class="form-select">
+                    <option selected>Thời gian</option>
+                    <option>Hôm nay</option>
+                    <option>Tuần này</option>
+                    <option>Tháng này</option>
+                    <option>Tất cả</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analysis History -->
+          <div class="row">
+            <div class="col-md-4 mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 class="mb-1">Nguyễn Thị B</h6>
+                      <small class="text-muted">BN-1024 • 15/05/2023 10:30</small>
+                    </div>
+                    <span class="badge bg-success">Hoàn thành</span>
+                  </div>
+                  <div class="text-center mb-3">
+                    <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded" alt="Dental X-ray">
+                  </div>
+                  <div class="mb-3">
+                    <h6>Kết quả phân tích:</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Sâu răng (Răng số 16)</span>
+                        <span class="badge bg-danger">98%</span>
+                      </li>
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Viêm nướu nhẹ</span>
+                        <span class="badge bg-warning text-dark">75%</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loại ảnh: <strong>X-quang</strong></span>
+                    <span class="text-muted">Bác sĩ: <strong>Dr. Nguyễn Văn A</strong></span>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary flex-grow-1">Xem chi tiết</a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-share"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 class="mb-1">Trần Văn C</h6>
+                      <small class="text-muted">BN-1023 • 14/05/2023 15:45</small>
+                    </div>
+                    <span class="badge bg-success">Hoàn thành</span>
+                  </div>
+                  <div class="text-center mb-3">
+                    <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded" alt="Dental X-ray">
+                  </div>
+                  <div class="mb-3">
+                    <h6>Kết quả phân tích:</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Viêm nướu (Vùng răng cửa)</span>
+                        <span class="badge bg-danger">95%</span>
+                      </li>
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Cao răng</span>
+                        <span class="badge bg-warning text-dark">88%</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loại ảnh: <strong>X-quang</strong></span>
+                    <span class="text-muted">Bác sĩ: <strong>Dr. Nguyễn Văn A</strong></span>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary flex-grow-1">Xem chi tiết</a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-share"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 class="mb-1">Lê Thị D</h6>
+                      <small class="text-muted">BN-1022 • 14/05/2023 09:15</small>
+                    </div>
+                    <span class="badge bg-warning text-dark">Theo dõi</span>
+                  </div>
+                  <div class="text-center mb-3">
+                    <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded" alt="Dental X-ray">
+                  </div>
+                  <div class="mb-3">
+                    <h6>Kết quả phân tích:</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Răng khôn mọc lệch (Răng số 48)</span>
+                        <span class="badge bg-danger">92%</span>
+                      </li>
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Nguy cơ viêm nướu</span>
+                        <span class="badge bg-warning text-dark">65%</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loại ảnh: <strong>Panorama</strong></span>
+                    <span class="text-muted">Bác sĩ: <strong>Dr. Nguyễn Văn A</strong></span>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary flex-grow-1">Xem chi tiết</a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-share"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 class="mb-1">Phạm Văn E</h6>
+                      <small class="text-muted">BN-1021 • 13/05/2023 14:00</small>
+                    </div>
+                    <span class="badge bg-success">Hoàn thành</span>
+                  </div>
+                  <div class="text-center mb-3">
+                    <img src="https://images.unsplash.com/photo-1607962837359-5e7e89f86776?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded" alt="Dental X-ray">
+                  </div>
+                  <div class="mb-3">
+                    <h6>Kết quả phân tích:</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Sâu răng (Răng số 26, 27)</span>
+                        <span class="badge bg-danger">97%</span>
+                      </li>
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Tủy răng bị tổn thương</span>
+                        <span class="badge bg-warning text-dark">82%</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loại ảnh: <strong>X-quang</strong></span>
+                    <span class="text-muted">Bác sĩ: <strong>Dr. Nguyễn Văn A</strong></span>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary flex-grow-1">Xem chi tiết</a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-share"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 class="mb-1">Hoàng Thị F</h6>
+                      <small class="text-muted">BN-1020 • 12/05/2023 11:30</small>
+                    </div>
+                    <span class="badge bg-primary">Đang điều trị</span>
+                  </div>
+                  <div class="text-center mb-3">
+                    <img src="https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded" alt="Dental X-ray">
+                  </div>
+                  <div class="mb-3">
+                    <h6>Kết quả phân tích:</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Răng lệch khớp cắn</span>
+                        <span class="badge bg-danger">94%</span>
+                      </li>
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Cần niềng răng</span>
+                        <span class="badge bg-warning text-dark">90%</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loại ảnh: <strong>Panorama</strong></span>
+                    <span class="text-muted">Bác sĩ: <strong>Dr. Nguyễn Văn A</strong></span>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary flex-grow-1">Xem chi tiết</a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-share"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-3">
+                    <div>
+                      <h6 class="mb-1">Vũ Minh G</h6>
+                      <small class="text-muted">BN-1019 • 11/05/2023 16:15</small>
+                    </div>
+                    <span class="badge bg-success">Hoàn thành</span>
+                  </div>
+                  <div class="text-center mb-3">
+                    <img src="https://images.unsplash.com/photo-1606811971618-4486d14f3f99?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1000&q=80" class="img-fluid rounded" alt="Dental X-ray">
+                  </div>
+                  <div class="mb-3">
+                    <h6>Kết quả phân tích:</h6>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Viêm tủy răng (Răng số 36)</span>
+                        <span class="badge bg-danger">96%</span>
+                      </li>
+                      <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                        <span>Cần điều trị tủy</span>
+                        <span class="badge bg-warning text-dark">89%</span>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span class="text-muted">Loại ảnh: <strong>X-quang</strong></span>
+                    <span class="text-muted">Bác sĩ: <strong>Dr. Nguyễn Văn A</strong></span>
+                  </div>
+                </div>
+                <div class="card-footer bg-white">
+                  <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-primary flex-grow-1">Xem chi tiết</a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-file-earmark-text"></i>
+                    </a>
+                    <a href="#" class="btn btn-outline-primary">
+                      <i class="bi bi-share"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <div>
+              <span class="text-muted">Hiển thị 1-6 của 24 kết quả</span>
+            </div>
+            <nav>
+              <ul class="pagination mb-0">
+                <li class="page-item disabled">
+                  <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Trước</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                  <a class="page-link" href="#">Sau</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Image Modal -->
+    <div class="modal fade" id="uploadImageModal" tabindex="-1" aria-labelledby="uploadImageModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="uploadImageModalLabel">Tải lên ảnh mới</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="patientSelect" class="form-label">Chọn bệnh nhân</label>
+                <select class="form-select" id="patientSelect" required>
+                  <option value="" selected disabled>Chọn bệnh nhân</option>
+                  <option value="1024">BN-1024 - Nguyễn Thị B</option>
+                  <option value="1023">BN-1023 - Trần Văn C</option>
+                  <option value="1022">BN-1022 - Lê Thị D</option>
+                  <option value="1021">BN-1021 - Phạm Văn E</option>
+                  <option value="1020">BN-1020 - Hoàng Thị F</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="imageType" class="form-label">Loại ảnh</label>
+                <select class="form-select" id="imageType" required>
+                  <option value="" selected disabled>Chọn loại ảnh</option>
+                  <option value="xray">X-quang</option>
+                  <option value="panorama">Panorama</option>
+                  <option value="ct">CT Scan</option>
+                  <option value="intraoral">Ảnh trong miệng</option>
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label for="imageUpload" class="form-label">Tải lên ảnh</label>
+                <input class="form-control" type="file" id="imageUpload" accept="image/*" required>
+                <div class="form-text">Hỗ trợ các định dạng: JPG, PNG, DICOM</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="imageDescription" class="form-label">Mô tả</label>
+                <textarea class="form-control" id="imageDescription" rows="3" placeholder="Nhập mô tả về ảnh và triệu chứng của bệnh nhân..."></textarea>
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="analyzeNow" checked>
+                  <label class="form-check-label" for="analyzeNow">
+                    Phân tích ngay bằng AI
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-primary">Tải lên và phân tích</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="static/js/main.js"></script>
+  </body>
+</html>
